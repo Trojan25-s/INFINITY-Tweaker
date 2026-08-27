@@ -194,7 +194,14 @@ def health_endpoint():
 @app.get("/admin", response_class=HTMLResponse)
 @app.get("/admin/", response_class=HTMLResponse)
 def admin_page(request: Request):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    try:
+        return templates.TemplateResponse(request=request, name="admin.html")
+    except Exception:
+        admin_html_path = os.path.join(ADMIN_DIR, "templates", "admin.html")
+        if os.path.exists(admin_html_path):
+            with open(admin_html_path, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+        return HTMLResponse(content="<h1>INFINITY Admin Authority Online</h1>")
 
 @app.get("/api/v1/admin/stats")
 def admin_stats(db: Session = Depends(get_db)):
