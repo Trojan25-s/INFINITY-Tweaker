@@ -1,17 +1,16 @@
 """
-Build Script for INFINITY Tweaker Desktop Application (.EXE)
-Packages client, UI templates, static assets, and optimization modules.
+PyInstaller Build Script with Full Package Collection
 """
 import os
 import subprocess
-import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def build():
-    print("[INFINITY] Starting .EXE Build Pipeline...")
+    print("[INFINITY] Building Executables with Full Package Collection...")
     
-    cmd = [
+    # 1. Build Onedir
+    cmd_onedir = [
         "pyinstaller",
         "--noconfirm",
         "--onedir",
@@ -24,36 +23,42 @@ def build():
         "--add-data", f"{os.path.join(BASE_DIR, 'AI')};AI",
         "--add-data", f"{os.path.join(BASE_DIR, 'System')};System",
         "--add-data", f"{os.path.join(BASE_DIR, 'Restore')};Restore",
-        "--hidden-import", "uvicorn",
-        "--hidden-import", "uvicorn.logging",
-        "--hidden-import", "uvicorn.loops",
-        "--hidden-import", "uvicorn.loops.auto",
-        "--hidden-import", "uvicorn.protocols",
-        "--hidden-import", "uvicorn.protocols.http",
-        "--hidden-import", "uvicorn.protocols.http.auto",
-        "--hidden-import", "uvicorn.protocols.websockets",
-        "--hidden-import", "uvicorn.protocols.websockets.auto",
-        "--hidden-import", "uvicorn.lifespans",
-        "--hidden-import", "uvicorn.lifespans.on",
-        "--hidden-import", "jinja2",
-        "--hidden-import", "fastapi",
-        "--hidden-import", "psutil",
-        "--hidden-import", "requests",
-        "--hidden-import", "pydantic",
+        "--collect-all", "fastapi",
+        "--collect-all", "starlette",
+        "--collect-all", "uvicorn",
+        "--collect-all", "jinja2",
+        "--collect-all", "pydantic",
+        "--collect-all", "requests",
+        "--collect-all", "psutil",
         os.path.join(BASE_DIR, "Client", "app.py")
     ]
-    
-    print(f"[INFINITY] Executing command: {' '.join(cmd)}")
-    subprocess.check_call(cmd)
-    
-    dist_path = os.path.join(BASE_DIR, "dist", "INFINITY-Tweaker", "INFINITY-Tweaker.exe")
-    if os.path.exists(dist_path):
-        print(f"\n==================================================")
-        print(f"🎉 BUILD SUCCESSFUL!")
-        print(f"Executable Location: {dist_path}")
-        print(f"==================================================")
-    else:
-        print("\n[WARN] Build completed but executable path could not be verified.")
+    subprocess.check_call(cmd_onedir)
+
+    # 2. Build Single File EXE
+    cmd_onefile = [
+        "pyinstaller",
+        "--noconfirm",
+        "--onefile",
+        "--windowed",
+        "--name", "INFINITY-Tweaker-SingleFile",
+        "--add-data", f"{os.path.join(BASE_DIR, 'UI')};UI",
+        "--add-data", f"{os.path.join(BASE_DIR, 'Core')};Core",
+        "--add-data", f"{os.path.join(BASE_DIR, 'Optimization')};Optimization",
+        "--add-data", f"{os.path.join(BASE_DIR, 'Gaming')};Gaming",
+        "--add-data", f"{os.path.join(BASE_DIR, 'AI')};AI",
+        "--add-data", f"{os.path.join(BASE_DIR, 'System')};System",
+        "--add-data", f"{os.path.join(BASE_DIR, 'Restore')};Restore",
+        "--collect-all", "fastapi",
+        "--collect-all", "starlette",
+        "--collect-all", "uvicorn",
+        "--collect-all", "jinja2",
+        "--collect-all", "pydantic",
+        "--collect-all", "requests",
+        "--collect-all", "psutil",
+        os.path.join(BASE_DIR, "Client", "app.py")
+    ]
+    subprocess.check_call(cmd_onefile)
+    print("\n[SUCCESS] Both onedir and singlefile builds completed with full dependencies!")
 
 if __name__ == "__main__":
     build()

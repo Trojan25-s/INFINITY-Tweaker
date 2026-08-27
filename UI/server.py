@@ -47,11 +47,17 @@ from Core.Updates.update_manager import check_for_updates
 
 logger = get_logger()
 
-client_app = FastAPI(title="INFINITY Tweaker Client Bridge", version="1.0.0")
+if getattr(sys, 'frozen', False):
+    base_res_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    BASE_DIR = os.path.join(base_res_dir, "UI") if os.path.exists(os.path.join(base_res_dir, "UI")) else os.path.dirname(os.path.abspath(__file__))
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
-client_app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates_dir = os.path.join(BASE_DIR, "templates")
+static_dir = os.path.join(BASE_DIR, "static")
+
+templates = Jinja2Templates(directory=templates_dir)
+client_app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Models
 class ActivationInput(BaseModel):
