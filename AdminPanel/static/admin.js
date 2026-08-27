@@ -126,7 +126,7 @@ function renderQuickLicensesTable(licenses) {
                     : (lic.status === 'SUSPENDED' 
                         ? `<button class="btn-success-sm" onclick="reactivateLicense(${lic.id})">Unsuspend</button>`
                         : `<button class="btn-success-sm" onclick="reactivateLicense(${lic.id})">Reactivate</button>`)}
-                <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="extendLicense(${lic.id})">+30d</button>
+                <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="extendLicense(${lic.id})" title="تمديد عدد أيام مخصص">+Days</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -157,7 +157,7 @@ function renderAllLicensesTable(licenses) {
                     ? `<button class="btn-danger-sm" onclick="revokeLicense(${lic.id})">Revoke</button>
                        <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="suspendLicense(${lic.id})">Suspend</button>` 
                     : `<button class="btn-success-sm" onclick="reactivateLicense(${lic.id})">Reactivate</button>`}
-                <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="extendLicense(${lic.id})">+30d</button>
+                <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="extendLicense(${lic.id})" title="تمديد عدد أيام مخصص">+Days</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -299,8 +299,22 @@ async function reactivateLicense(id) {
 }
 
 async function extendLicense(id) {
-    await fetch(`/api/v1/admin/licenses/${id}/extend?days=30`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
-    loadAllData();
+    const daysStr = prompt("أدخل عدد الأيام التي تريد إضافتها لهذا الكود (مثال: 1, 3, 7, 14, 30, 90):", "30");
+    if (!daysStr || isNaN(daysStr)) return;
+    const days = parseInt(daysStr, 10);
+    if (days <= 0) return;
+
+    try {
+        const res = await fetch(`/api/v1/admin/licenses/${id}/extend?days=${days}`, {
+            method: 'POST', 
+            headers: {'X-Admin-Key': adminKey}
+        });
+        const data = await res.json();
+        alert(`تم تمديد الكود بنجاح بمقدار +${days} يوم! تاريخ الانتهاء الجديد: ${new Date(data.new_expiration).toLocaleDateString()}`);
+        loadAllData();
+    } catch (e) {
+        alert('حدث خطأ أثناء التمديد');
+    }
 }
 
 async function changeDeviceLimit(id, currentLimit) {
