@@ -179,7 +179,16 @@ def verify_admin_token(x_admin_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Unauthorized Admin Access")
     return True
 
+@app.get("/")
+def root_endpoint():
+    return {"status": "ONLINE", "name": "INFINITY Tweaker Central Authority", "version": "1.0.0"}
+
+@app.get("/health")
+def health_endpoint():
+    return {"status": "HEALTHY"}
+
 @app.get("/admin", response_class=HTMLResponse)
+@app.get("/admin/", response_class=HTMLResponse)
 def admin_page(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
 
