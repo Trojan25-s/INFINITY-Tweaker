@@ -15,7 +15,8 @@ COPY . .
 
 ENV PYTHONUNBUFFERED=1
 ENV INFINITY_HOST=0.0.0.0
+ENV PORT=8000
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python -m uvicorn Backend.server:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["uvicorn", "Backend.server:app", "--host", "0.0.0.0", "--port", "8000"]
