@@ -4,6 +4,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -14,4 +16,6 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 ENV INFINITY_HOST=0.0.0.0
 
-CMD python -m uvicorn Backend.server:app --host 0.0.0.0 --port ${PORT:-8000}
+EXPOSE 8000
+
+CMD ["sh", "-c", "python -m uvicorn Backend.server:app --host 0.0.0.0 --port ${PORT:-8000}"]

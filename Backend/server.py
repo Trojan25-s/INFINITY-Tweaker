@@ -47,7 +47,11 @@ if os.path.exists(static_dir):
 
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    try:
+        init_db()
+        print("[INFO] Database initialized successfully.")
+    except Exception as e:
+        print(f"[WARN] Database initialization deferred: {e}")
 
 # --- Public Client Request Models ---
 
