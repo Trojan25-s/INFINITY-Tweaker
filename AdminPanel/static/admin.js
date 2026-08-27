@@ -1,9 +1,52 @@
 let allLicenses = [];
+let allDevices = [];
+let adminKey = localStorage.getItem('infinity_admin_key') || '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadAllData();
-    setInterval(loadAllData, 10000); // Auto-sync every 10s
+    checkAdminAuth();
 });
+
+// --- ADMIN AUTHENTICATION ---
+
+function checkAdminAuth() {
+    if (adminKey) {
+        document.getElementById('admin-auth-overlay').classList.add('hidden');
+        document.getElementById('admin-main-wrapper').classList.remove('hidden');
+        loadAllData();
+        setInterval(loadAllData, 10000);
+    } else {
+        document.getElementById('admin-auth-overlay').classList.remove('hidden');
+        document.getElementById('admin-main-wrapper').classList.add('hidden');
+    }
+}
+
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    const key = document.getElementById('input-admin-key').value.trim();
+    if (!key) return;
+
+    try {
+        const res = await fetch('/api/v1/admin/stats', {
+            headers: {'X-Admin-Key': key}
+        });
+        if (res.status === 200) {
+            adminKey = key;
+            localStorage.setItem('infinity_admin_key', key);
+            checkAdminAuth();
+        } else {
+            const err = document.getElementById('login-error');
+            err.classList.remove('hidden');
+        }
+    } catch (e) {
+        alert('Server unreachable');
+    }
+}
+
+function logoutAdmin() {
+    localStorage.removeItem('infinity_admin_key');
+    adminKey = '';
+    window.location.reload();
+}
 
 function showTab(tabName) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -16,12 +59,11 @@ function showTab(tabName) {
     if (panel) panel.classList.add('active');
 
     const titles = {
-        'dashboard': 'Centralized Multi-User System Telemetry',
-        'licenses': 'License Key Vault & Authority',
+        'quick_control': 'License & Device Central Management',
+        'licenses': 'License Authority Vault',
         'devices': 'Authorized Hardware Nodes (HWID)',
         'events': 'Real-Time Multi-User Heartbeats & Events',
         'broadcasts': 'Broadcast Notifications',
-        'updates': 'Release Distribution Pipeline',
         'logs': 'Cryptographic Audit Trail'
     };
     document.getElementById('tab-title').innerText = titles[tabName] || 'Admin Console';
@@ -40,49 +82,43 @@ async function loadAllData() {
 
 async function fetchStats() {
     try {
-        const res = await fetch('/api/v1/admin/stats');
+        const res = await fetch('/api/v1/admin/stats', {headers: {'X-Admin-Key': adminKey}});
         const data = await res.json();
-        document.getElementById('stat-total-licenses').innerText = data.total_licenses;
-        document.getElementById('stat-active-licenses').innerText = `${data.active_licenses} Active`;
-        document.getElementById('stat-online-clients').innerText = data.online_clients;
-        document.getElementById('stat-total-devices').innerText = data.total_devices;
-        document.getElementById('stat-active-devices').innerText = `${data.active_devices} Bound`;
-        document.getElementById('stat-revoked-expired').innerText = data.revoked_licenses + data.expired_licenses;
-        document.getElementById('stat-suspended').innerText = `${data.suspended_licenses} Suspended`;
-    } catch (e) {
-        console.error('Failed to load stats', e);
-    }
+        const counts = `Total: ${data.total_licenses} · Active: ${data.active_licenses} · Expired: ${data.expired_licenses} · Revoked: ${data.revoked_licenses} · Suspended: ${data.suspended_licenses}`;
+        const el = document.getElementById('lic-summary-counts');
+        if (el) el.innerText = counts;
+    } catch (e) {}
 }
 
 async function fetchLicenses() {
     try {
-        const res = await fetch('/api/v1/admin/licenses');
+        const res = await fetch('/api/v1/admin/licenses', {headers: {'X-Admin-Key': adminKey}});
         allLicenses = await res.json();
-        renderLicensesTable(allLicenses);
-        renderRecentLicenses(allLicenses.slice(0, 5));
-    } catch (e) {
-        console.error('Failed to load licenses', e);
-    }
+        renderQuickLicensesTable(allLicenses);
+        renderAllLicensesTable(allLicenses);
+    } catch (e) {}
 }
 
-function renderLicensesTable(licenses) {
-    const tbody = document.querySelector('#table-all-licenses tbody');
+function renderQuickLicensesTable(licenses) {
+    const tbody = document.querySelector('#table-quick-licenses tbody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     licenses.forEach(lic => {
         const tr = document.createElement('tr');
         const statusBadge = `<span class="badge badge-${lic.status.toLowerCase()}">${lic.status}</span>`;
         const expires = lic.expires_at ? new Date(lic.expires_at).toLocaleDateString() : 'Lifetime';
-        const created = lic.created_at ? new Date(lic.created_at).toLocaleDateString() : 'N/A';
 
         tr.innerHTML = `
-            <td>#${lic.id}</td>
-            <td><strong style="color:var(--primary); font-family:var(--font-heading);">${lic.code}</strong></td>
+            <td>
+                <a href="javascript:void(0)" onclick="inspectSpecificCode('${lic.code}')" style="color:var(--primary); font-family:var(--font-heading); font-weight:700; text-decoration:none;">
+                    ${lic.code}
+                </a>
+            </td>
             <td>${lic.license_type}</td>
             <td>${statusBadge}</td>
-            <td><strong>${lic.device_count}</strong> / ${lic.max_devices} <button class="btn-secondary" style="padding:2px 6px; font-size:10px;" onclick="changeDeviceLimit(${lic.id}, ${lic.max_devices})">Edit</button></td>
             <td>${expires}</td>
-            <td>${created}</td>
+            <td><strong>${lic.device_count}</strong> / ${lic.max_devices} <button class="btn-secondary" style="padding:2px 6px; font-size:10px;" onclick="changeDeviceLimit(${lic.id}, ${lic.max_devices})">Edit</button></td>
             <td>
                 ${lic.status === 'ACTIVE' 
                     ? `<button class="btn-danger-sm" onclick="revokeLicense(${lic.id})">Revoke</button>
@@ -97,25 +133,31 @@ function renderLicensesTable(licenses) {
     });
 }
 
-function renderRecentLicenses(licenses) {
-    const tbody = document.querySelector('#table-recent-licenses tbody');
+function renderAllLicensesTable(licenses) {
+    const tbody = document.querySelector('#table-all-licenses tbody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     licenses.forEach(lic => {
         const tr = document.createElement('tr');
         const statusBadge = `<span class="badge badge-${lic.status.toLowerCase()}">${lic.status}</span>`;
         const expires = lic.expires_at ? new Date(lic.expires_at).toLocaleDateString() : 'Lifetime';
+        const created = lic.created_at ? new Date(lic.created_at).toLocaleDateString() : 'N/A';
 
         tr.innerHTML = `
+            <td>#${lic.id}</td>
             <td><strong style="color:var(--primary); font-family:var(--font-heading);">${lic.code}</strong></td>
             <td>${lic.license_type}</td>
             <td>${statusBadge}</td>
+            <td><strong>${lic.device_count}</strong> / ${lic.max_devices}</td>
             <td>${expires}</td>
-            <td>${lic.device_count} / ${lic.max_devices}</td>
+            <td>${created}</td>
             <td>
                 ${lic.status === 'ACTIVE' 
-                    ? `<button class="btn-danger-sm" onclick="revokeLicense(${lic.id})">Revoke</button>` 
+                    ? `<button class="btn-danger-sm" onclick="revokeLicense(${lic.id})">Revoke</button>
+                       <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="suspendLicense(${lic.id})">Suspend</button>` 
                     : `<button class="btn-success-sm" onclick="reactivateLicense(${lic.id})">Reactivate</button>`}
+                <button class="btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="extendLicense(${lic.id})">+30d</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -129,48 +171,161 @@ function filterLicenses() {
         l.license_type.toLowerCase().includes(q) || 
         (l.notes && l.notes.toLowerCase().includes(q))
     );
-    renderLicensesTable(filtered);
+    renderAllLicensesTable(filtered);
 }
+
+// --- GENERATE ACTIVATION CODE ---
+
+async function handleQuickGenerate(e) {
+    e.preventDefault();
+    const type = document.getElementById('quick-lic-type').value;
+    const devices = parseInt(document.getElementById('quick-lic-devices').value, 10);
+
+    try {
+        const res = await fetch('/api/v1/admin/licenses', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-Admin-Key': adminKey},
+            body: JSON.stringify({
+                license_type: type,
+                max_devices: devices
+            })
+        });
+        const result = await res.json();
+        alert(`New Activation Key Generated: ${result.code} (Limit: ${devices} devices)`);
+        loadAllData();
+    } catch (err) {
+        alert('Error generating key');
+    }
+}
+
+// --- DEVICES INSPECTION ---
 
 async function fetchDevices() {
     try {
-        const res = await fetch('/api/v1/admin/devices');
-        const devices = await res.json();
-        const tbody = document.querySelector('#table-devices tbody');
-        tbody.innerHTML = '';
+        const res = await fetch('/api/v1/admin/devices', {headers: {'X-Admin-Key': adminKey}});
+        allDevices = await res.json();
+        renderAllDevicesTable(allDevices);
+    } catch (e) {}
+}
 
-        devices.forEach(dev => {
-            const tr = document.createElement('tr');
-            const statusBadge = dev.is_active 
-                ? '<span class="badge badge-active">Authorized</span>' 
-                : '<span class="badge badge-revoked">Deactivated</span>';
-            const lastSeen = dev.last_seen ? new Date(dev.last_seen).toLocaleString() : 'N/A';
+function renderAllDevicesTable(devices) {
+    const tbody = document.querySelector('#table-all-devices tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-            tr.innerHTML = `
-                <td>#${dev.id}</td>
-                <td><strong style="color:var(--primary);">${dev.license_code}</strong></td>
-                <td>${dev.device_name}</td>
-                <td>${dev.os_info}</td>
-                <td><span class="badge badge-accent">${dev.app_version}</span></td>
-                <td><code style="font-size:11px; color:var(--text-muted);">${dev.hwid.substring(0, 16)}...</code></td>
-                <td>${lastSeen}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    ${dev.is_active ? `<button class="btn-danger-sm" onclick="deactivateDevice(${dev.id})">Deauthorize</button>` : '—'}
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (e) {
-        console.error('Failed to load devices', e);
+    devices.forEach(dev => {
+        const tr = document.createElement('tr');
+        const statusBadge = dev.is_active 
+            ? '<span class="badge badge-active">Authorized</span>' 
+            : '<span class="badge badge-revoked">Deactivated</span>';
+        const lastSeen = dev.last_seen ? new Date(dev.last_seen).toLocaleString() : 'N/A';
+
+        tr.innerHTML = `
+            <td>#${dev.id}</td>
+            <td><strong style="color:var(--primary);">${dev.license_code}</strong></td>
+            <td>${dev.device_name}</td>
+            <td>${dev.os_info}</td>
+            <td><span class="badge badge-accent">${dev.app_version}</span></td>
+            <td><code style="font-size:11px; color:var(--text-muted);">${dev.hwid.substring(0, 16)}...</code></td>
+            <td>${lastSeen}</td>
+            <td>${statusBadge}</td>
+            <td>
+                ${dev.is_active ? `<button class="btn-danger-sm" onclick="deactivateDevice(${dev.id})">Deauthorize</button>` : '—'}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function inspectSpecificCode(code) {
+    document.getElementById('inspect-code-input').value = code;
+    inspectDevicesForCode();
+}
+
+function inspectDevicesForCode() {
+    const code = document.getElementById('inspect-code-input').value.trim().toUpperCase();
+    if (!code) {
+        alert('Please enter an activation code to inspect.');
+        return;
     }
+
+    const matchingDevices = allDevices.filter(d => d.license_code.toUpperCase() === code);
+    const tbody = document.querySelector('#table-license-devices tbody');
+    tbody.innerHTML = '';
+
+    if (matchingDevices.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-muted text-center">No devices have activated code <strong>${code}</strong> yet.</td></tr>`;
+        return;
+    }
+
+    matchingDevices.forEach(dev => {
+        const tr = document.createElement('tr');
+        const statusBadge = dev.is_active 
+            ? '<span class="badge badge-active">Authorized</span>' 
+            : '<span class="badge badge-revoked">Deactivated</span>';
+        const lastSeen = dev.last_seen ? new Date(dev.last_seen).toLocaleString() : 'N/A';
+
+        tr.innerHTML = `
+            <td>#${dev.id}</td>
+            <td><strong>${dev.device_name}</strong> (${dev.os_info})</td>
+            <td>${statusBadge}</td>
+            <td>${lastSeen}</td>
+            <td><code style="font-size:11px;">${dev.hwid.substring(0, 16)}...</code></td>
+            <td>
+                ${dev.is_active ? `<button class="btn-danger-sm" onclick="deactivateDevice(${dev.id})">Deauthorize</button>` : '—'}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// --- REMOTE ACTIONS ---
+
+async function revokeLicense(id) {
+    if (!confirm('Are you sure you want to REVOKE this license? Connected users will be locked out immediately.')) return;
+    await fetch(`/api/v1/admin/licenses/${id}/revoke`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
+    loadAllData();
+}
+
+async function suspendLicense(id) {
+    if (!confirm('Suspend this license? Users will be paused on next heartbeat.')) return;
+    await fetch(`/api/v1/admin/licenses/${id}/suspend`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
+    loadAllData();
+}
+
+async function reactivateLicense(id) {
+    await fetch(`/api/v1/admin/licenses/${id}/reactivate`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
+    loadAllData();
+}
+
+async function extendLicense(id) {
+    await fetch(`/api/v1/admin/licenses/${id}/extend?days=30`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
+    loadAllData();
+}
+
+async function changeDeviceLimit(id, currentLimit) {
+    const newLim = prompt(`Enter new maximum device limit for license #${id}:`, currentLimit);
+    if (!newLim || isNaN(newLim)) return;
+    await fetch(`/api/v1/admin/licenses/${id}/set-limit`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-Admin-Key': adminKey},
+        body: JSON.stringify({new_limit: parseInt(newLim, 10)})
+    });
+    loadAllData();
+}
+
+async function deactivateDevice(id) {
+    if (!confirm('Deauthorize this hardware ID from the license?')) return;
+    await fetch(`/api/v1/admin/devices/${id}/deactivate`, {method: 'POST', headers: {'X-Admin-Key': adminKey}});
+    loadAllData();
 }
 
 async function fetchEvents() {
     try {
-        const res = await fetch('/api/v1/admin/events');
+        const res = await fetch('/api/v1/admin/events', {headers: {'X-Admin-Key': adminKey}});
         const events = await res.json();
         const tbody = document.querySelector('#table-events tbody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         events.forEach(ev => {
@@ -184,9 +339,7 @@ async function fetchEvents() {
             `;
             tbody.appendChild(tr);
         });
-    } catch (e) {
-        console.error('Failed to load events', e);
-    }
+    } catch (e) {}
 }
 
 async function fetchNotifications() {
@@ -194,6 +347,7 @@ async function fetchNotifications() {
         const res = await fetch('/api/v1/notifications');
         const list = await res.json();
         const container = document.getElementById('broadcasts-list');
+        if (!container) return;
         container.innerHTML = '';
 
         list.forEach(n => {
@@ -206,16 +360,15 @@ async function fetchNotifications() {
             `;
             container.appendChild(item);
         });
-    } catch (e) {
-        console.error('Failed to load notifications', e);
-    }
+    } catch (e) {}
 }
 
 async function fetchAuditLogs() {
     try {
-        const res = await fetch('/api/v1/admin/logs');
+        const res = await fetch('/api/v1/admin/logs', {headers: {'X-Admin-Key': adminKey}});
         const logs = await res.json();
         const tbody = document.querySelector('#table-audit-logs tbody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         logs.forEach(l => {
@@ -229,84 +382,7 @@ async function fetchAuditLogs() {
             `;
             tbody.appendChild(tr);
         });
-    } catch (e) {
-        console.error('Failed to load logs', e);
-    }
-}
-
-// Modal handlers
-function openCreateModal() {
-    document.getElementById('modal-create-license').classList.add('active');
-}
-
-function closeCreateModal() {
-    document.getElementById('modal-create-license').classList.remove('active');
-}
-
-async function handleCreateLicense(e) {
-    e.preventDefault();
-    const type = document.getElementById('modal-lic-type').value;
-    const devices = parseInt(document.getElementById('modal-lic-devices').value, 10);
-    const code = document.getElementById('modal-lic-code').value.trim() || null;
-    const notes = document.getElementById('modal-lic-notes').value.trim() || null;
-
-    try {
-        const res = await fetch('/api/v1/admin/licenses', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                license_type: type,
-                max_devices: devices,
-                custom_code: code,
-                notes: notes
-            })
-        });
-        const result = await res.json();
-        closeCreateModal();
-        alert(`Activation Key Created: ${result.code}`);
-        loadAllData();
-    } catch (err) {
-        alert('Error generating license');
-    }
-}
-
-async function revokeLicense(id) {
-    if (!confirm('Are you sure you want to REVOKE this license? All connected clients will be locked out immediately.')) return;
-    await fetch(`/api/v1/admin/licenses/${id}/revoke`, {method: 'POST'});
-    loadAllData();
-}
-
-async function suspendLicense(id) {
-    if (!confirm('Suspend this license? Connected rigs will have premium features suspended on next heartbeat.')) return;
-    await fetch(`/api/v1/admin/licenses/${id}/suspend`, {method: 'POST'});
-    loadAllData();
-}
-
-async function reactivateLicense(id) {
-    await fetch(`/api/v1/admin/licenses/${id}/reactivate`, {method: 'POST'});
-    loadAllData();
-}
-
-async function extendLicense(id) {
-    await fetch(`/api/v1/admin/licenses/${id}/extend?days=30`, {method: 'POST'});
-    loadAllData();
-}
-
-async function changeDeviceLimit(id, currentLimit) {
-    const newLim = prompt(`Enter new maximum device limit for license #${id}:`, currentLimit);
-    if (!newLim || isNaN(newLim)) return;
-    await fetch(`/api/v1/admin/licenses/${id}/set-limit`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({new_limit: parseInt(newLim, 10)})
-    });
-    loadAllData();
-}
-
-async function deactivateDevice(id) {
-    if (!confirm('Deauthorize this hardware ID from the license?')) return;
-    await fetch(`/api/v1/admin/devices/${id}/deactivate`, {method: 'POST'});
-    loadAllData();
+    } catch (e) {}
 }
 
 async function handleSendNotification(e) {
@@ -317,35 +393,10 @@ async function handleSendNotification(e) {
 
     await fetch('/api/v1/admin/notifications', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'X-Admin-Key': adminKey},
         body: JSON.stringify({title, level, message})
     });
     document.getElementById('form-broadcast').reset();
     fetchNotifications();
     alert('Broadcast notification sent!');
-}
-
-async function handlePublishRelease(e) {
-    e.preventDefault();
-    const version = document.getElementById('update-version').value;
-    const min_supported_version = document.getElementById('update-min-ver').value;
-    const download_url = document.getElementById('update-url').value;
-    const checksum_sha256 = document.getElementById('update-sha').value;
-    const release_notes = document.getElementById('update-notes').value;
-    const is_critical = document.getElementById('update-critical').checked;
-
-    await fetch('/api/v1/admin/updates/publish', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            version,
-            min_supported_version,
-            download_url,
-            checksum_sha256,
-            release_notes,
-            is_critical
-        })
-    });
-    alert('Release manifest published successfully!');
-    document.getElementById('form-update').reset();
 }

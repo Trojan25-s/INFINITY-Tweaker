@@ -3,118 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INFINITY Tweaker — Master Central Command Authority</title>
+    <title>INFINITY Tweaker — Master Admin Authority</title>
     <link rel="stylesheet" href="/static/admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="admin-layout">
-        <!-- Sidebar -->
+    <!-- 🔒 ADMIN LOGIN / UNLOCK OVERLAY -->
+    <div id="admin-auth-overlay" class="auth-modal-backdrop">
+        <div class="auth-modal-card">
+            <div class="brand-infinity">∞</div>
+            <h2>INFINITY Admin</h2>
+            <p class="text-muted">Enter your master admin key to manage licenses & devices</p>
+            
+            <form onsubmit="handleAdminLogin(event)" class="mt-4">
+                <div id="login-error" class="alert-box alert-danger hidden">Invalid Admin Key</div>
+                <div class="form-group text-left">
+                    <label>Admin API Key</label>
+                    <input type="password" id="input-admin-key" placeholder="Enter Secret Admin Key..." required autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary w-full mt-3">UNLOCK DASHBOARD</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN ADMIN CONSOLE -->
+    <div id="admin-main-wrapper" class="admin-layout hidden">
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-area">
                 <div class="logo-icon">∞</div>
                 <div class="logo-text">
                     <h2>INFINITY</h2>
-                    <span>CENTRAL AUTHORITY</span>
+                    <span>ADMIN CONSOLE</span>
                 </div>
             </div>
             <nav class="nav-menu">
-                <a href="#dashboard" class="nav-item active" onclick="showTab('dashboard')">
-                    <i data-lucide="layout-dashboard"></i> Multi-User Metrics
+                <a href="#quick_control" class="nav-item active" onclick="showTab('quick_control')">
+                    <i data-lucide="zap"></i> License Control
                 </a>
                 <a href="#licenses" class="nav-item" onclick="showTab('licenses')">
-                    <i data-lucide="key-round"></i> License Authority
+                    <i data-lucide="key-round"></i> All Licenses
                 </a>
                 <a href="#devices" class="nav-item" onclick="showTab('devices')">
-                    <i data-lucide="monitor"></i> Authorized Hardware (HWID)
+                    <i data-lucide="monitor"></i> Devices by Key
                 </a>
                 <a href="#events" class="nav-item" onclick="showTab('events')">
-                    <i data-lucide="activity"></i> Real-Time Events
+                    <i data-lucide="activity"></i> Live Heartbeats
                 </a>
                 <a href="#broadcasts" class="nav-item" onclick="showTab('broadcasts')">
                     <i data-lucide="megaphone"></i> Broadcasts
                 </a>
-                <a href="#updates" class="nav-item" onclick="showTab('updates')">
-                    <i data-lucide="refresh-cw"></i> Releases & Updates
-                </a>
                 <a href="#logs" class="nav-item" onclick="showTab('logs')">
-                    <i data-lucide="shield-alert"></i> Audit Logs
+                    <i data-lucide="shield-check"></i> Audit Logs
                 </a>
             </nav>
             <div class="server-status-pill">
                 <span class="pulse-dot"></span>
-                <span>CENTRALIZED API ONLINE</span>
+                <span>SECURE CLOUD API ONLINE</span>
             </div>
+            <button class="btn btn-secondary mt-2" onclick="logoutAdmin()"><i data-lucide="log-out"></i> Lock Console</button>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
                 <div class="page-title">
-                    <h1 id="tab-title">Multi-User Command & Control</h1>
-                    <p>Centralized activation authority, real-time heartbeats, and instant remote revocation</p>
+                    <h1 id="tab-title">License & Device Management</h1>
+                    <p>Real-time activation authority, user tracking, and remote control</p>
                 </div>
                 <div class="topbar-actions">
-                    <button class="btn btn-primary" onclick="openCreateModal()">
-                        <i data-lucide="plus-circle"></i> Generate Key
-                    </button>
                     <button class="btn btn-secondary" onclick="loadAllData()">
-                        <i data-lucide="refresh-ccw"></i> Sync All
+                        <i data-lucide="refresh-ccw"></i> Sync Now
                     </button>
                 </div>
             </header>
 
-            <!-- TAB 1: OVERVIEW METRICS -->
-            <section id="tab-dashboard" class="tab-panel active">
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <span>TOTAL LICENSES</span>
-                            <i data-lucide="credit-card"></i>
-                        </div>
-                        <div class="metric-value" id="stat-total-licenses">0</div>
-                        <div class="metric-sub" id="stat-active-licenses">0 Active</div>
+            <!-- TAB 1: QUICK CONTROL (Exact requested layout) -->
+            <section id="tab-quick_control" class="tab-panel active">
+                <!-- Generate Activation Code Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="plus-circle"></i> Generate Activation Code</h3>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <span>ONLINE RIGS (LAST 2M)</span>
-                            <i data-lucide="activity"></i>
+                    <form onsubmit="handleQuickGenerate(event)" class="grid-2col">
+                        <div class="form-group">
+                            <label>License Type</label>
+                            <select id="quick-lic-type">
+                                <option value="3-Day Trial">3-Day Trial</option>
+                                <option value="1 Week">1 Week</option>
+                                <option value="1 Month" selected>1 Month</option>
+                                <option value="1 Year">1 Year</option>
+                                <option value="Lifetime">Lifetime</option>
+                            </select>
                         </div>
-                        <div class="metric-value text-glow-green" id="stat-online-clients">0</div>
-                        <div class="metric-sub">Active Heartbeats</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <span>DEVICES BOUND</span>
-                            <i data-lucide="laptop"></i>
+                        <div class="form-group">
+                            <label>Device Limit (Max Users/PCs per Code)</label>
+                            <input type="number" id="quick-lic-devices" min="1" max="100" value="1" required>
                         </div>
-                        <div class="metric-value" id="stat-total-devices">0</div>
-                        <div class="metric-sub" id="stat-active-devices">0 Authorized</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-header">
-                            <span>SUSPENDED / REVOKED</span>
-                            <i data-lucide="alert-triangle"></i>
+                        <div class="form-group full-span">
+                            <button type="submit" class="btn btn-primary"><i data-lucide="zap"></i> GENERATE CODE</button>
                         </div>
-                        <div class="metric-value text-red" id="stat-revoked-expired">0</div>
-                        <div class="metric-sub" id="stat-suspended">0 Suspended</div>
-                    </div>
+                    </form>
                 </div>
 
+                <!-- Licenses Table Card -->
                 <div class="card mt-4">
-                    <div class="card-header">
-                        <h3><i data-lucide="history"></i> Recent License Management Activity</h3>
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3><i data-lucide="key"></i> Licenses <button class="btn btn-secondary" style="padding:3px 8px; font-size:11px; margin-left:8px;" onclick="fetchLicenses()"><i data-lucide="refresh-cw"></i> Refresh</button></h3>
+                            <small class="text-muted" id="lic-summary-counts">Total: 0 · Active: 0 · Expired: 0 · Revoked: 0 · Suspended: 0</small>
+                        </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="data-table" id="table-recent-licenses">
+                        <table class="data-table" id="table-quick-licenses">
                             <thead>
                                 <tr>
                                     <th>Key</th>
                                     <th>Type</th>
                                     <th>Status</th>
                                     <th>Expires</th>
-                                    <th>Devices</th>
+                                    <th>Limit</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -122,16 +131,46 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Devices for a License Card -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3><i data-lucide="laptop"></i> Devices for a License</h3>
+                        <p class="text-muted" style="font-size:12px;">Enter an activation code or click a key above to inspect who registered with that code.</p>
+                    </div>
+                    <div class="search-device-bar">
+                        <div class="form-group" style="flex:1;">
+                            <input type="text" id="inspect-code-input" placeholder="INF-XXXX-XXXX-XXXX">
+                        </div>
+                        <button class="btn btn-primary" onclick="inspectDevicesForCode()"><i data-lucide="search"></i> LOAD DEVICES</button>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="data-table" id="table-license-devices">
+                            <thead>
+                                <tr>
+                                    <th>Device ID</th>
+                                    <th>PC Name / Label</th>
+                                    <th>Status</th>
+                                    <th>Last Seen (Heartbeat)</th>
+                                    <th>HWID Signature</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="6" class="text-muted text-center">No key selected. Enter an activation code above to view registered user devices.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
-            <!-- TAB 2: LICENSES -->
+            <!-- TAB 2: ALL LICENSES -->
             <section id="tab-licenses" class="tab-panel">
                 <div class="card">
                     <div class="card-header flex-between">
                         <h3><i data-lucide="key"></i> All Issued Activation Keys</h3>
-                        <div class="search-bar">
-                            <input type="text" id="license-search" placeholder="Search by key, tier, notes..." oninput="filterLicenses()">
-                        </div>
+                        <input type="text" id="license-search" placeholder="Search by key, tier, notes..." oninput="filterLicenses()">
                     </div>
                     <div class="table-responsive">
                         <table class="data-table" id="table-all-licenses">
@@ -157,17 +196,17 @@
             <section id="tab-devices" class="tab-panel">
                 <div class="card">
                     <div class="card-header">
-                        <h3><i data-lucide="monitor"></i> Authorized Hardware Nodes (HWID)</h3>
+                        <h3><i data-lucide="monitor"></i> All Connected Hardware Nodes (HWID)</h3>
                     </div>
                     <div class="table-responsive">
-                        <table class="data-table" id="table-devices">
+                        <table class="data-table" id="table-all-devices">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>License Key</th>
-                                    <th>Device Name</th>
-                                    <th>OS Environment</th>
-                                    <th>Version</th>
+                                    <th>PC Name</th>
+                                    <th>OS Version</th>
+                                    <th>App Version</th>
                                     <th>HWID Signature</th>
                                     <th>Last Heartbeat</th>
                                     <th>State</th>
@@ -184,7 +223,7 @@
             <section id="tab-events" class="tab-panel">
                 <div class="card">
                     <div class="card-header">
-                        <h3><i data-lucide="activity"></i> Real-Time Multi-User Heartbeats & Activation Events</h3>
+                        <h3><i data-lucide="activity"></i> Real-Time Multi-User Heartbeats & Events</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table" id="table-events">
@@ -239,44 +278,7 @@
                 </div>
             </section>
 
-            <!-- TAB 6: RELEASES & UPDATES -->
-            <section id="tab-updates" class="tab-panel">
-                <div class="card">
-                    <div class="card-header">
-                        <h3><i data-lucide="package"></i> Release Distribution Pipeline</h3>
-                    </div>
-                    <form id="form-update" onsubmit="handlePublishRelease(event)" class="grid-2col">
-                        <div class="form-group">
-                            <label>Release Version</label>
-                            <input type="text" id="update-version" placeholder="1.0.1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Minimum Supported Version</label>
-                            <input type="text" id="update-min-ver" value="1.0.0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Installer / Package URL</label>
-                            <input type="url" id="update-url" placeholder="https://cdn.infinitytweaker.com/updates/1.0.1.exe" required>
-                        </div>
-                        <div class="form-group">
-                            <label>SHA-256 Checksum</label>
-                            <input type="text" id="update-sha" placeholder="64-character SHA-256 hash" required>
-                        </div>
-                        <div class="form-group full-span">
-                            <label>Changelog / Release Notes</label>
-                            <textarea id="update-notes" rows="3" placeholder="Performance optimizations, bug fixes, new GPU drivers profile..."></textarea>
-                        </div>
-                        <div class="form-group full-span flex-center">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="update-critical"> Force Mandatory Critical Update (Blocks outdated clients)
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary full-span">Deploy Release Manifest</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- TAB 7: AUDIT LOGS -->
+            <!-- TAB 6: AUDIT LOGS -->
             <section id="tab-logs" class="tab-panel">
                 <div class="card">
                     <div class="card-header">
@@ -299,44 +301,6 @@
                 </div>
             </section>
         </main>
-    </div>
-
-    <!-- Modal Generate License -->
-    <div class="modal" id="modal-create-license">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Generate New Activation Key</h3>
-                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
-            </div>
-            <form id="form-create-license" onsubmit="handleCreateLicense(event)">
-                <div class="form-group">
-                    <label>License Tier / Duration</label>
-                    <select id="modal-lic-type">
-                        <option value="3-Day Trial">3-Day Trial</option>
-                        <option value="1 Week">1 Week</option>
-                        <option value="1 Month" selected>1 Month</option>
-                        <option value="1 Year">1 Year</option>
-                        <option value="Lifetime">Lifetime</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Max Authorized Devices (Device Limit)</label>
-                    <input type="number" id="modal-lic-devices" min="1" max="50" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>Custom Code (Leave blank for auto-generation)</label>
-                    <input type="text" id="modal-lic-code" placeholder="e.g. INF-PROMO-2026-VIP1">
-                </div>
-                <div class="form-group">
-                    <label>Admin Notes / Customer Reference</label>
-                    <input type="text" id="modal-lic-notes" placeholder="VIP Customer, Streamer, Tournament Rig...">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Generate Activation Key</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <script src="/static/admin.js"></script>
