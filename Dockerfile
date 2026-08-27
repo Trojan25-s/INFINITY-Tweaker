@@ -17,10 +17,10 @@ COPY . .
 # Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV INFINITY_HOST=0.0.0.0
-ENV INFINITY_PORT=8000
+ENV PORT=8000
 
 # Expose server port
 EXPOSE 8000
 
-# Run FastAPI Licensing Backend Server
-CMD ["uvicorn", "Backend.server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run FastAPI Licensing Backend Server with dynamic PORT support
+CMD ["sh", "-c", "uvicorn Backend.server:app --host 0.0.0.0 --port ${PORT:-8000}"]

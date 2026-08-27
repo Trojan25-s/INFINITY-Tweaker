@@ -23,7 +23,7 @@ DEFAULT_SETTINGS = {
         "ram_threshold_pct": 85
     },
     "network": {
-        "backend_url": "http://127.0.0.1:8000",
+        "backend_url": "https://infinity-tweaker-production.up.railway.app",
         "auto_check_updates": True
     },
     "security": {
