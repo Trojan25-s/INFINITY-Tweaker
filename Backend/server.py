@@ -341,4 +341,7 @@ def admin_audit_logs(limit: int = 50, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=BACKEND_HOST, port=BACKEND_PORT)
+    host = os.getenv("INFINITY_HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8000))
+    print(f"[INFINITY] Starting Authority Server on {host}:{port}")
+    uvicorn.run(app, host=host, port=port)
