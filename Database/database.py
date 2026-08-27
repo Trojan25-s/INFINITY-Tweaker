@@ -6,7 +6,10 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "infinity_license.db")
-DATABASE_URL = os.getenv("INFINITY_DATABASE_URL", f"sqlite:///{DB_PATH}")
+DATABASE_URL = os.getenv("DATABASE_URL", os.getenv("INFINITY_DATABASE_URL", f"sqlite:///{DB_PATH}"))
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Connection configuration with pooling for high multi-user concurrency
 if DATABASE_URL.startswith("sqlite"):
