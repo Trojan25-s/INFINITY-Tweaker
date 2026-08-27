@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFINITY Tweaker — Master Central Command Authority</title>
+    <link rel="stylesheet" href="/static/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">∞</div>
+                <div class="logo-text">
+                    <h2>INFINITY</h2>
+                    <span>CENTRAL AUTHORITY</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" onclick="showTab('dashboard')">
+                    <i data-lucide="layout-dashboard"></i> Multi-User Metrics
+                </a>
+                <a href="#licenses" class="nav-item" onclick="showTab('licenses')">
+                    <i data-lucide="key-round"></i> License Authority
+                </a>
+                <a href="#devices" class="nav-item" onclick="showTab('devices')">
+                    <i data-lucide="monitor"></i> Authorized Hardware (HWID)
+                </a>
+                <a href="#events" class="nav-item" onclick="showTab('events')">
+                    <i data-lucide="activity"></i> Real-Time Events
+                </a>
+                <a href="#broadcasts" class="nav-item" onclick="showTab('broadcasts')">
+                    <i data-lucide="megaphone"></i> Broadcasts
+                </a>
+                <a href="#updates" class="nav-item" onclick="showTab('updates')">
+                    <i data-lucide="refresh-cw"></i> Releases & Updates
+                </a>
+                <a href="#logs" class="nav-item" onclick="showTab('logs')">
+                    <i data-lucide="shield-alert"></i> Audit Logs
+                </a>
+            </nav>
+            <div class="server-status-pill">
+                <span class="pulse-dot"></span>
+                <span>CENTRALIZED API ONLINE</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="page-title">
+                    <h1 id="tab-title">Multi-User Command & Control</h1>
+                    <p>Centralized activation authority, real-time heartbeats, and instant remote revocation</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i data-lucide="plus-circle"></i> Generate Key
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadAllData()">
+                        <i data-lucide="refresh-ccw"></i> Sync All
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB 1: OVERVIEW METRICS -->
+            <section id="tab-dashboard" class="tab-panel active">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span>TOTAL LICENSES</span>
+                            <i data-lucide="credit-card"></i>
+                        </div>
+                        <div class="metric-value" id="stat-total-licenses">0</div>
+                        <div class="metric-sub" id="stat-active-licenses">0 Active</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span>ONLINE RIGS (LAST 2M)</span>
+                            <i data-lucide="activity"></i>
+                        </div>
+                        <div class="metric-value text-glow-green" id="stat-online-clients">0</div>
+                        <div class="metric-sub">Active Heartbeats</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span>DEVICES BOUND</span>
+                            <i data-lucide="laptop"></i>
+                        </div>
+                        <div class="metric-value" id="stat-total-devices">0</div>
+                        <div class="metric-sub" id="stat-active-devices">0 Authorized</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span>SUSPENDED / REVOKED</span>
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="metric-value text-red" id="stat-revoked-expired">0</div>
+                        <div class="metric-sub" id="stat-suspended">0 Suspended</div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3><i data-lucide="history"></i> Recent License Management Activity</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-recent-licenses">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Expires</th>
+                                    <th>Devices</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: LICENSES -->
+            <section id="tab-licenses" class="tab-panel">
+                <div class="card">
+                    <div class="card-header flex-between">
+                        <h3><i data-lucide="key"></i> All Issued Activation Keys</h3>
+                        <div class="search-bar">
+                            <input type="text" id="license-search" placeholder="Search by key, tier, notes..." oninput="filterLicenses()">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-all-licenses">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Activation Key</th>
+                                    <th>Tier / Type</th>
+                                    <th>Status</th>
+                                    <th>Devices Active</th>
+                                    <th>Expiration</th>
+                                    <th>Created At</th>
+                                    <th>Remote Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: DEVICES -->
+            <section id="tab-devices" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="monitor"></i> Authorized Hardware Nodes (HWID)</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-devices">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>License Key</th>
+                                    <th>Device Name</th>
+                                    <th>OS Environment</th>
+                                    <th>Version</th>
+                                    <th>HWID Signature</th>
+                                    <th>Last Heartbeat</th>
+                                    <th>State</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: REAL-TIME EVENTS -->
+            <section id="tab-events" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="activity"></i> Real-Time Multi-User Heartbeats & Activation Events</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-events">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp (UTC)</th>
+                                    <th>Event</th>
+                                    <th>License Target</th>
+                                    <th>HWID Target</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: BROADCAST NOTIFICATIONS -->
+            <section id="tab-broadcasts" class="tab-panel">
+                <div class="grid-2col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="send"></i> Broadcast System Notification</h3>
+                        </div>
+                        <form id="form-broadcast" onsubmit="handleSendNotification(event)">
+                            <div class="form-group">
+                                <label>Notification Title</label>
+                                <input type="text" id="notif-title" placeholder="e.g. Patch 1.0.1 Released" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Severity Level</label>
+                                <select id="notif-level">
+                                    <option value="info">Information (Blue)</option>
+                                    <option value="warning">Warning / Maintenance (Orange)</option>
+                                    <option value="urgent">Urgent Announcement (Red)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Message Content</label>
+                                <textarea id="notif-message" rows="4" placeholder="Message broadcasted to all active client dashboards..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-full">Broadcast Notification</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="list"></i> Active Broadcasts</h3>
+                        </div>
+                        <div id="broadcasts-list" class="notif-feed"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: RELEASES & UPDATES -->
+            <section id="tab-updates" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="package"></i> Release Distribution Pipeline</h3>
+                    </div>
+                    <form id="form-update" onsubmit="handlePublishRelease(event)" class="grid-2col">
+                        <div class="form-group">
+                            <label>Release Version</label>
+                            <input type="text" id="update-version" placeholder="1.0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Supported Version</label>
+                            <input type="text" id="update-min-ver" value="1.0.0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Installer / Package URL</label>
+                            <input type="url" id="update-url" placeholder="https://cdn.infinitytweaker.com/updates/1.0.1.exe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SHA-256 Checksum</label>
+                            <input type="text" id="update-sha" placeholder="64-character SHA-256 hash" required>
+                        </div>
+                        <div class="form-group full-span">
+                            <label>Changelog / Release Notes</label>
+                            <textarea id="update-notes" rows="3" placeholder="Performance optimizations, bug fixes, new GPU drivers profile..."></textarea>
+                        </div>
+                        <div class="form-group full-span flex-center">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="update-critical"> Force Mandatory Critical Update (Blocks outdated clients)
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary full-span">Deploy Release Manifest</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 7: AUDIT LOGS -->
+            <section id="tab-logs" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i data-lucide="shield-check"></i> Cryptographic Audit Trail</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-audit-logs">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp (UTC)</th>
+                                    <th>Action</th>
+                                    <th>License Target</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Generate License -->
+    <div class="modal" id="modal-create-license">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generate New Activation Key</h3>
+                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <form id="form-create-license" onsubmit="handleCreateLicense(event)">
+                <div class="form-group">
+                    <label>License Tier / Duration</label>
+                    <select id="modal-lic-type">
+                        <option value="3-Day Trial">3-Day Trial</option>
+                        <option value="1 Week">1 Week</option>
+                        <option value="1 Month" selected>1 Month</option>
+                        <option value="1 Year">1 Year</option>
+                        <option value="Lifetime">Lifetime</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Max Authorized Devices (Device Limit)</label>
+                    <input type="number" id="modal-lic-devices" min="1" max="50" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Custom Code (Leave blank for auto-generation)</label>
+                    <input type="text" id="modal-lic-code" placeholder="e.g. INF-PROMO-2026-VIP1">
+                </div>
+                <div class="form-group">
+                    <label>Admin Notes / Customer Reference</label>
+                    <input type="text" id="modal-lic-notes" placeholder="VIP Customer, Streamer, Tournament Rig...">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Activation Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

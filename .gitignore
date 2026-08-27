@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Database & Vaults
+*.db
+*.db-wal
+*.db-shm
+.vault.dat
+Core/Security/.vault.dat
+
+# Logs & Temp
+Logs/
+*.log
+Snapshots/
+
+# Environments & IDE
+.venv/
+venv/
+ENV/
+.env
+.idea/
+.vscode/
+
+# Config overrides
+Config/settings.json

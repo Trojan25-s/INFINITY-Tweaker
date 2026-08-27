@@ -1,0 +1,74 @@
+[
+  {
+    "timestamp": "2026-08-27T17:01:50.047345+00:00",
+    "feature": "RAM Optimizer",
+    "setting": "Working Set Trimming",
+    "previous_value": "4419.5 MB (27.2%)",
+    "new_value": "3579.7 MB (22.0%)",
+    "result": "SUCCESS",
+    "details": "Freed 839.8 MB across 142 processes"
+  },
+  {
+    "timestamp": "2026-08-27T17:01:40.606684+00:00",
+    "feature": "TestFeature",
+    "setting": "TestSetting",
+    "previous_value": "OldVal",
+    "new_value": "NewVal",
+    "result": "SUCCESS",
+    "details": "UnitTest Details"
+  },
+  {
+    "timestamp": "2026-08-27T17:00:57.731384+00:00",
+    "feature": "RAM Optimizer",
+    "setting": "Working Set Trimming",
+    "previous_value": "3664.3 MB (22.5%)",
+    "new_value": "3146.8 MB (19.4%)",
+    "result": "SUCCESS",
+    "details": "Freed 517.5 MB across 142 processes"
+  },
+  {
+    "timestamp": "2026-08-27T17:00:48.837680+00:00",
+    "feature": "TestFeature",
+    "setting": "TestSetting",
+    "previous_value": "OldVal",
+    "new_value": "NewVal",
+    "result": "SUCCESS",
+    "details": "UnitTest Details"
+  },
+  {
+    "timestamp": "2026-08-27T17:00:09.155594+00:00",
+    "feature": "RAM Optimizer",
+    "setting": "Working Set Trimming",
+    "previous_value": "4427.7 MB (27.2%)",
+    "new_value": "3496.0 MB (21.5%)",
+    "result": "SUCCESS",
+    "details": "Freed 931.7 MB across 140 processes"
+  },
+  {
+    "timestamp": "2026-08-27T17:00:00.505744+00:00",
+    "feature": "TestFeature",
+    "setting": "TestSetting",
+    "previous_value": "OldVal",
+    "new_value": "NewVal",
+    "result": "SUCCESS",
+    "details": "UnitTest Details"
+  },
+  {
+    "timestamp": "2026-08-27T16:57:29.328838+00:00",
+    "feature": "RAM Optimizer",
+    "setting": "Working Set Trimming",
+    "previous_value": "8433.9 MB (51.9%)",
+    "new_value": "6487.8 MB (39.9%)",
+    "result": "SUCCESS",
+    "details": "Freed 1946.1 MB across 140 processes"
+  },
+  {
+    "timestamp": "2026-08-27T16:57:17.716560+00:00",
+    "feature": "TestFeature",
+    "setting": "TestSetting",
+    "previous_value": "OldVal",
+    "new_value": "NewVal",
+    "result": "SUCCESS",
+    "details": "UnitTest Details"
+  }
+]
